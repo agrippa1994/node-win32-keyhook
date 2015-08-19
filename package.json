@@ -1,0 +1,5 @@
+{
+	"name": "keyhook",
+	"version": "1.0.0",
+	"main": "./build/Release/keyhook"
+}
