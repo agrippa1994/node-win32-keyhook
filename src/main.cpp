@@ -10,7 +10,6 @@
 struct hookKeyboardData {
 	bool success = false;
 	bool done = false;
-	bool initializeMessageLoop = true;
 	std::mutex lock;
 	std::condition_variable condition;
 	v8::Persistent<v8::Function> callback;
@@ -27,7 +26,7 @@ void hookKeyboardWorker(uv_work_t *req) {
 	auto data = (hookKeyboardData *)req->data;
 
 	setKeyboardHookedCallback(std::bind(hookKeyboardInitializer, std::placeholders::_1, data));
-	if (!initializeKeyhook(data->initializeMessageLoop)) {
+	if (!initializeKeyhook()) {
 		data->success = false;
 		return;
 	}
@@ -65,15 +64,12 @@ namespace NodeFunctions {
 	v8::Handle<v8::Value> hookKeyboard(const v8::Arguments& args) {
 		v8::HandleScope scope;
 
-		bool initializeMessageLoop = true;
 		if (args.Length() < 1)
 			V8_EXCEPTION("First argument must be a callback!");
 
 		if (!args[0]->IsFunction())
 			V8_EXCEPTION("First argument must be a callback!");
 
-		if (args[1]->IsBoolean())
-			initializeMessageLoop = args[1]->ToBoolean()->BooleanValue();
 
 		auto callback = v8::Local<v8::Function>::Cast(args[0]);
 
@@ -81,7 +77,6 @@ namespace NodeFunctions {
 		uv_work_t *worker = new uv_work_t;
 
 		data->callback = v8::Persistent<v8::Function>::New(callback);
-		data->initializeMessageLoop = initializeMessageLoop;
 		worker->data = data;
 		
 		uv_queue_work(uv_default_loop(), worker, hookKeyboardWorker, hookKeyboardAfter);

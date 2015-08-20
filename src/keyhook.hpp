@@ -12,7 +12,7 @@ bool registerKey(const std::string& key, KeyPressedCallback callback);
 
 bool unregisterKey(const std::string& key);
 
-bool initializeKeyhook(bool initializeMessageLoop);
+bool initializeKeyhook();
 
 bool destroyKeyhook();
 
